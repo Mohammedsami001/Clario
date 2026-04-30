@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clario — Test UI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d14;
+      --surface: #16162a;
+      --card: #1e1e35;
+      --border: #2e2e55;
+      --accent: #7c6fff;
+      --accent2: #c084fc;
+      --text: #e2e2f0;
+      --muted: #8888aa;
+      --success: #4ade80;
+      --error: #f87171;
+      --warn: #facc15;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: .3rem;
+    }
+    .subtitle { text-align: center; color: var(--muted); margin-bottom: 2.5rem; font-size: .95rem; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    label { font-size: .85rem; color: var(--muted); display: block; margin-bottom: .5rem; letter-spacing: .05em; text-transform: uppercase; }
+
+    input[type="text"] {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .75rem 1rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    button {
+      display: block;
+      width: 100%;
+      margin-top: 1rem;
+      padding: .85rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    button:hover { opacity: .9; }
+    button:active { transform: scale(.98); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* Progress */
+    .progress-bar-wrap {
+      background: var(--surface);
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+      margin: 1rem 0 .5rem;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 999px;
+      transition: width .5s ease;
+      width: 0%;
+    }
+    .stage-label { font-size: .9rem; color: var(--muted); }
+    .status-badge {
+      display: inline-block;
+      padding: .2rem .75rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .badge-pending  { background: #2e2e55; color: var(--muted); }
+    .badge-processing { background: #2e1e55; color: var(--accent2); }
+    .badge-done     { background: #14291f; color: var(--success); }
+    .badge-failed   { background: #291414; color: var(--error); }
+
+    /* Reel */
+    .reel-grid { display: grid; gap: 1.2rem; }
+    .reel-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .reel-card video {
+      width: 100%;
+      max-height: 320px;
+      background: #000;
+      display: block;
+    }
+    .reel-body { padding: 1rem 1.2rem 1.2rem; }
+    .reel-index { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .4rem; }
+    .reel-title { font-size: 1.05rem; font-weight: 600; margin-bottom: .5rem; }
+    .reel-summary { font-size: .88rem; color: var(--muted); margin-bottom: .8rem; line-height: 1.55; }
+    .reel-bullets { list-style: none; }
+    .reel-bullets li { font-size: .85rem; color: var(--text); padding: .25rem 0; display: flex; gap: .5rem; }
+    .reel-bullets li::before { content: "→"; color: var(--accent); flex-shrink: 0; }
+    .tags { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .8rem; }
+    .tag {
+      background: #2a1e55;
+      color: var(--accent2);
+      font-size: .72rem;
+      padding: .2rem .6rem;
+      border-radius: 999px;
+    }
+
+    .empty { text-align: center; color: var(--muted); padding: 2rem; font-size: .9rem; }
+    .error-msg { color: var(--error); font-size: .88rem; margin-top: .5rem; }
+    .notes-btn {
+      display: inline-block; width: auto; padding: .5rem 1.2rem;
+      font-size: .85rem; margin-top: 1rem; border-radius: 8px;
+    }
+    #notes-section pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: .82rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .container { max-width: 780px; margin: 0 auto; }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>⚡ Clario</h1>
+  <p class="subtitle">AI Study Reel Generator — Backend Test UI</p>
+
+  <!-- Input -->
+  <div class="card" id="input-card">
+    <label for="yt-url">YouTube URL</label>
+    <input type="text" id="yt-url" placeholder="https://www.youtube.com/watch?v=..." />
+    <button id="submit-btn" onclick="submitJob()">Generate Study Reel</button>
+    <p class="error-msg" id="input-error"></p>
+  </div>
+
+  <!-- Progress -->
+  <div class="card" id="progress-card" style="display:none;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:.8rem;">
+      <strong id="job-id-label" style="font-size:.85rem; color:var(--muted);"></strong>
+      <span class="status-badge badge-pending" id="status-badge">Pending</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="stage-label" id="stage-label">Queued...</div>
+  </div>
+
+  <!-- Reel -->
+  <div id="reel-section" style="display:none;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+      <h2 id="video-title" style="font-size:1.2rem; font-weight:600;"></h2>
+      <button class="notes-btn" onclick="loadNotes()">📄 View Notes</button>
+    </div>
+    <div class="reel-grid" id="reel-grid"></div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card" id="notes-section" style="display:none;">
+    <h3 style="margin-bottom:1rem;">📝 Full Notes</h3>
+    <pre id="notes-pre"></pre>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:8000';
+  let currentJobId = null;
+  let ws = null;
+
+  async function submitJob() {
+    const url = document.getElementById('yt-url').value.trim();
+    const errEl = document.getElementById('input-error');
+    errEl.textContent = '';
+
+    if (!url.startsWith('http')) {
+      errEl.textContent = 'Please enter a valid YouTube URL.';
+      return;
+    }
+
+    document.getElementById('submit-btn').disabled = true;
+    document.getElementById('reel-section').style.display = 'none';
+    document.getElementById('notes-section').style.display = 'none';
+    document.getElementById('reel-grid').innerHTML = '';
+
+    try {
+      const res = await fetch(`${API}/api/jobs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ youtube_url: url }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const job = await res.json();
+      currentJobId = job.id;
+
+      document.getElementById('progress-card').style.display = '';
+      document.getElementById('job-id-label').textContent = `Job: ${job.id.slice(0, 8)}...`;
+      connectWebSocket(job.id);
+    } catch (e) {
+      errEl.textContent = `Error: ${e.message}`;
+      document.getElementById('submit-btn').disabled = false;
+    }
+  }
+
+  function connectWebSocket(jobId) {
+    if (ws) ws.close();
+    ws = new WebSocket(`ws://localhost:8000/ws/jobs/${jobId}`);
+
+    ws.onmessage = (evt) => {
+      const data = JSON.parse(evt.data);
+      updateProgress(data);
+      if (data.status === 'done') { ws.close(); loadReel(jobId); }
+      if (data.status === 'failed') { ws.close(); showError(data.error_msg); }
+    };
+    ws.onerror = () => { pollFallback(jobId); };
+  }
+
+  // Fallback HTTP polling if WebSocket fails
+  function pollFallback(jobId) {
+    const timer = setInterval(async () => {
+      try {
+        const res = await fetch(`${API}/api/jobs/${jobId}`);
+        const data = await res.json();
+        updateProgress(data);
+        if (data.status === 'done') { clearInterval(timer); loadReel(jobId); }
+        if (data.status === 'failed') { clearInterval(timer); showError(data.error_msg); }
+      } catch {}
+    }, 2000);
+  }
+
+  function updateProgress(data) {
+    const bar = document.getElementById('progress-bar');
+    const label = document.getElementById('stage-label');
+    const badge = document.getElementById('status-badge');
+
+    bar.style.width = `${data.progress || 0}%`;
+    label.textContent = data.stage || 'Processing...';
+
+    badge.className = 'status-badge';
+    if (data.status === 'processing') badge.classList.add('badge-processing');
+    else if (data.status === 'done') badge.classList.add('badge-done');
+    else if (data.status === 'failed') badge.classList.add('badge-failed');
+    else badge.classList.add('badge-pending');
+    badge.textContent = data.status || 'pending';
+  }
+
+  async function loadReel(jobId) {
+    try {
+      const res = await fetch(`${API}/api/reels/${jobId}`);
+      if (!res.ok) throw new Error(await res.text());
+      const reel = await res.json();
+
+      document.getElementById('video-title').textContent = reel.video_title || 'Study Reel';
+      document.getElementById('reel-section').style.display = '';
+
+      const grid = document.getElementById('reel-grid');
+      grid.innerHTML = '';
+      reel.segments.forEach((seg, i) => renderClip(grid, seg, i));
+      document.getElementById('submit-btn').disabled = false;
+    } catch (e) {
+      showError(e.message);
+    }
+  }
+
+  function renderClip(container, seg, i) {
+    const clip = seg.clip || {};
+    const summary = clip.summary || {};
+    const bullets = (summary.bullet_points || []).map(b => `<li>${b}</li>`).join('');
+    const tags = (summary.topic_tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+
+    const card = document.createElement('div');
+    card.className = 'reel-card';
+    card.innerHTML = `
+      ${clip.public_url
+        ? `<video controls preload="metadata" src="${clip.public_url}"></video>`
+        : `<div style="height:100px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem;">No clip available</div>`
+      }
+      <div class="reel-body">
+        <div class="reel-index">Concept ${i + 1} · ${formatTime(seg.start_time)} – ${formatTime(seg.end_time)}</div>
+        <div class="reel-title">${seg.title || summary.title || `Concept ${i + 1}`}</div>
+        ${summary.one_liner ? `<div class="reel-summary">${summary.one_liner}</div>` : ''}
+        ${bullets ? `<ul class="reel-bullets">${bullets}</ul>` : ''}
+        ${tags ? `<div class="tags">${tags}</div>` : ''}
+      </div>`;
+    container.appendChild(card);
+  }
+
+  async function loadNotes() {
+    if (!currentJobId) return;
+    try {
+      const res = await fetch(`${API}/api/reels/${currentJobId}/notes`);
+      const notes = await res.json();
+      let text = notes.map((n, i) =>
+        `## ${i + 1}. ${n.title || 'Untitled'}\n` +
+        `⏱ ${formatTime(n.start_time)} – ${formatTime(n.end_time)}\n\n` +
+        `${n.one_liner || ''}\n\n` +
+        (n.bullet_points || []).map(b => `  • ${b}`).join('\n') + '\n'
+      ).join('\n---\n\n');
+      document.getElementById('notes-pre').textContent = text;
+      document.getElementById('notes-section').style.display = '';
+    } catch (e) { alert('Failed to load notes: ' + e.message); }
+  }
+
+  function showError(msg) {
+    document.getElementById('stage-label').textContent = `Error: ${msg}`;
+    document.getElementById('submit-btn').disabled = false;
+  }
+
+  function formatTime(s) {
+    if (!s) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`;
+  }
+</script>
+</body>
+</html>
