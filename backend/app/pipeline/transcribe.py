@@ -1,34 +1,29 @@
 import logging
 
-from faster_whisper import WhisperModel
+import torch
+import whisper
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-_model: WhisperModel | None = None
+_model = None
 
 
-def _get_model() -> WhisperModel:
-    """Lazy-load and cache the Whisper model (loads once per worker process)."""
+def _get_model():
+    """Lazy-load and cache the Whisper model (loaded once per worker process)."""
     global _model
     if _model is None:
-        logger.info(
-            f"Loading Whisper model '{settings.WHISPER_MODEL}' "
-            f"on {settings.WHISPER_DEVICE} ({settings.WHISPER_COMPUTE_TYPE})"
-        )
-        _model = WhisperModel(
-            settings.WHISPER_MODEL,
-            device=settings.WHISPER_DEVICE,
-            compute_type=settings.WHISPER_COMPUTE_TYPE,
-        )
-        logger.info("Whisper model loaded ✅")
+        device = "cuda" if settings.WHISPER_DEVICE == "cuda" and torch.cuda.is_available() else "cpu"
+        logger.info(f"Loading Whisper model '{settings.WHISPER_MODEL}' on {device}")
+        _model = whisper.load_model(settings.WHISPER_MODEL, device=device)
+        logger.info(f"Whisper model loaded ✅  (device: {device})")
     return _model
 
 
 def transcribe_video(file_path: str) -> dict:
     """
-    Transcribe a video file using faster-whisper.
+    Transcribe a video/audio file using openai-whisper.
     Returns:
         {
             "text": str,           # full transcript
@@ -38,35 +33,43 @@ def transcribe_video(file_path: str) -> dict:
         }
     """
     model = _get_model()
-
     logger.info(f"Transcribing: {file_path}")
 
-    segments_iter, info = model.transcribe(
+    result = model.transcribe(
         file_path,
-        beam_size=5,
         word_timestamps=True,
-        vad_filter=True,
-        vad_parameters={"min_silence_duration_ms": 500},
+        verbose=False,
+        fp16=torch.cuda.is_available(),  # fp16 only on GPU
     )
 
+    # Flatten word-level timestamps from all segments
     words = []
-    text_parts = []
+    for seg in result.get("segments", []):
+        for w in seg.get("words", []):
+            words.append({
+                "word": w["word"],
+                "start": w["start"],
+                "end": w["end"],
+            })
 
-    for seg in segments_iter:
-        text_parts.append(seg.text.strip())
-        if seg.words:
-            for w in seg.words:
-                words.append({"word": w.word, "start": w.start, "end": w.end})
-        else:
-            # Fallback: use segment-level timestamps if word timestamps unavailable
-            words.append({"word": seg.text, "start": seg.start, "end": seg.end})
+    # Fallback: if word timestamps empty, use segment-level
+    if not words:
+        logger.warning("Word timestamps unavailable — falling back to segment-level")
+        for seg in result.get("segments", []):
+            words.append({
+                "word": seg["text"],
+                "start": seg["start"],
+                "end": seg["end"],
+            })
 
-    full_text = " ".join(text_parts)
-    logger.info(f"Transcription done — {len(words)} words, language: {info.language}")
+    # Calculate duration from last word end
+    duration = words[-1]["end"] if words else 0.0
+
+    logger.info(f"Transcription done — {len(words)} words, language: {result.get('language')}")
 
     return {
-        "text": full_text,
+        "text": result.get("text", "").strip(),
         "words": words,
-        "language": info.language,
-        "duration": info.duration,
+        "language": result.get("language", "en"),
+        "duration": duration,
     }
