@@ -1,0 +1,55 @@
+============================================================
+  CLARIO — Run Commands (3 Terminals)
+============================================================
+
+  Open 3 separate PowerShell terminals and run
+  the commands below in order.
+
+============================================================
+
+
+TERMINAL 1 — Redis (run once, stays in background)
+------------------------------------------------------------
+
+  cd D:\CLARIO
+  docker compose up redis -d
+
+
+TERMINAL 2 — API Server
+------------------------------------------------------------
+
+  cd D:\CLARIO\backend
+  .\venv\Scripts\activate
+  uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+  ✅ Expected: "Clario API started — tables ready"
+  🔗 Health:   http://localhost:8000/health
+  🔗 Docs:     http://localhost:8000/docs
+
+
+TERMINAL 3 — Celery Worker (AI Pipeline)
+------------------------------------------------------------
+
+  cd D:\CLARIO\backend
+  .\venv\Scripts\activate
+  celery -A app.tasks.celery_app.celery_app worker --loglevel=info --pool=solo
+
+  ✅ Expected: "celery@... ready."
+
+
+TEST — Open in Browser
+------------------------------------------------------------
+
+  D:\CLARIO\test-ui\index.html
+
+  1. Paste a YouTube URL
+  2. Click "Generate Study Reel"
+  3. Watch Terminal 3 for live pipeline logs
+
+
+STOP — To shut everything down
+------------------------------------------------------------
+
+  Terminal 2:  Ctrl+C
+  Terminal 3:  Ctrl+C
+  Terminal 1:  docker compose down
