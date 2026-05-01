@@ -5,6 +5,10 @@
   Open 3 separate PowerShell terminals and run
   the commands below in order.
 
+  ⚠️  IMPORTANT: Always use "python -m" prefix!
+      Plain "uvicorn" or "celery" may use system
+      Python which is missing packages.
+
 ============================================================
 
 
@@ -20,7 +24,7 @@ TERMINAL 2 — API Server
 
   cd D:\CLARIO\backend
   .\venv\Scripts\activate
-  uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+  python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
   ✅ Expected: "Clario API started — tables ready"
   🔗 Health:   http://localhost:8000/health
@@ -32,7 +36,7 @@ TERMINAL 3 — Celery Worker (AI Pipeline)
 
   cd D:\CLARIO\backend
   .\venv\Scripts\activate
-  celery -A app.tasks.celery_app.celery_app worker --loglevel=info --pool=solo
+  python -m celery -A app.tasks.celery_app.celery_app worker --loglevel=info --pool=solo
 
   ✅ Expected: "celery@... ready."
 
@@ -53,3 +57,15 @@ STOP — To shut everything down
   Terminal 2:  Ctrl+C
   Terminal 3:  Ctrl+C
   Terminal 1:  docker compose down
+
+
+TROUBLESHOOTING
+------------------------------------------------------------
+
+  Q: "ModuleNotFoundError: No module named 'xyz'"
+  A: You're using system Python, not venv. Make sure:
+     1. You see (venv) at the start of your prompt
+     2. You use "python -m uvicorn" NOT just "uvicorn"
+
+  Verify correct Python:
+     python -c "import sqlalchemy; print('OK')"
