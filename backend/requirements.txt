@@ -16,8 +16,8 @@ python-dotenv==1.0.1
 celery==5.3.6
 redis==5.0.4
 
-# Video download
-yt-dlp==2024.4.9
+# Video download — NEVER pin this, YouTube breaks old versions
+yt-dlp
 
 # Transcription — openai-whisper runs locally on GPU, completely free
 openai-whisper
