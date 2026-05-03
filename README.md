@@ -439,7 +439,7 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 <div align="center">
 
-**Built with ❤️ by [Mohammed Sami](https://github.com/Mohammedsami001)**
+**Built with Precision by [SAMI](https://github.com/Mohammedsami001)**
 
 *Clario MVP v0.1 — Backend Pipeline Complete*
 
