@@ -407,20 +407,6 @@ The included `test-ui/index.html` provides a complete dark-mode test interface w
 
 ---
 
-## 🗺️ Roadmap
-
-- [x] ~~Backend pipeline (download → transcribe → segment → clip → summarize)~~
-- [x] ~~REST API + WebSocket progress tracking~~
-- [x] ~~Test UI for backend validation~~
-- [ ] Next.js frontend with TikTok-style vertical scroll reel
-- [ ] User authentication (Clerk)
-- [ ] Cloud deployment (Vercel + Railway)
-- [ ] LLM-based smart segmentation (topic boundary detection)
-- [ ] PDF/Markdown notes export
-- [ ] Personalized learning feed
-
----
-
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -441,6 +427,5 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 **Built with Precision by [SAMI](https://github.com/Mohammedsami001)**
 
-*Clario MVP v0.1 — Backend Pipeline Complete*
-
+*Clario MVP*
 </div>
