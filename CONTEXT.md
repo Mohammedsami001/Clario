@@ -19,3 +19,7 @@ _Avoid_: Analysis job, video session, task
 **Processing**:
 The fully automated background phase where the AI intelligently analyzes the Source Video and breaks it down into short segments.
 _Avoid_: Analysis, extraction, magic
+
+**Study Reel**:
+A single, short, vertically-scrollable video segment generated from the Source Video. Multiple Study Reels make up the final output for a Project.
+_Avoid_: Short, segment, clip
