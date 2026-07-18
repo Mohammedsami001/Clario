@@ -67,6 +67,7 @@ Students waste hours scrubbing through long videos, re-watching sections, and ta
 
 **Input:** A single YouTube URL  
 **Output:** A scrollable reel of concept clips, each with:
+
 - 🎬 A short video clip (45-90 seconds)
 - 📌 An AI-generated concept title
 - 💡 A one-liner summary
@@ -77,17 +78,17 @@ Students waste hours scrubbing through long videos, re-watching sections, and ta
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology | Purpose | Cost |
-|:---:|---|---|:---:|
-| 🌐 | **FastAPI** | Async REST API + WebSocket server | Free |
-| ⚙️ | **Celery + Redis** | Distributed task queue for video processing | Free |
-| 🎤 | **OpenAI Whisper** | Speech-to-text transcription (runs on local GPU) | Free |
-| 🧠 | **Groq API** (LLaMA 3 8B) | AI summarization with structured JSON output | Free tier |
-| 📥 | **yt-dlp** | YouTube video download with anti-bot measures | Free |
-| 🎬 | **FFmpeg** | Video clip extraction via stream copy | Free |
-| 🗄️ | **SQLite** / PostgreSQL | Relational database for all metadata | Free |
-| 📦 | **Cloudflare R2** | Production clip storage (S3-compatible) | Free 10GB |
-| 🐳 | **Docker Compose** | Local Redis infrastructure | Free |
+| Layer | Technology                | Purpose                                          |   Cost    |
+| :---: | ------------------------- | ------------------------------------------------ | :-------: |
+|  🌐   | **FastAPI**               | Async REST API + WebSocket server                |   Free    |
+|  ⚙️   | **Celery + Redis**        | Distributed task queue for video processing      |   Free    |
+|  🎤   | **OpenAI Whisper**        | Speech-to-text transcription (runs on local GPU) |   Free    |
+|  🧠   | **Groq API** (LLaMA 3 8B) | AI summarization with structured JSON output     | Free tier |
+|  📥   | **yt-dlp**                | YouTube video download with anti-bot measures    |   Free    |
+|  🎬   | **FFmpeg**                | Video clip extraction via stream copy            |   Free    |
+|  🗄️   | **SQLite** / PostgreSQL   | Relational database for all metadata             |   Free    |
+|  📦   | **Cloudflare R2**         | Production clip storage (S3-compatible)          | Free 10GB |
+|  🐳   | **Docker Compose**        | Local Redis infrastructure                       |   Free    |
 
 ### 💰 Total Running Cost: **$0/month**
 
@@ -140,12 +141,12 @@ Every component either runs locally on your hardware or uses a generous free tie
 
 ### Prerequisites
 
-| Tool | Install |
-|---|---|
-| **Python 3.10+** | [python.org](https://www.python.org/downloads/) |
+| Tool               | Install                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| **Python 3.10+**   | [python.org](https://www.python.org/downloads/)               |
 | **Docker Desktop** | [docker.com](https://www.docker.com/products/docker-desktop/) |
-| **FFmpeg** | `winget install ffmpeg` |
-| **Groq API Key** | Free at [console.groq.com](https://console.groq.com) |
+| **FFmpeg**         | `winget install ffmpeg`                                       |
+| **Groq API Key**   | Free at [console.groq.com](https://console.groq.com)          |
 
 ### 1. Clone & Configure
 
@@ -156,6 +157,7 @@ cp .env.example .env
 ```
 
 Edit `.env` and add your `GROQ_API_KEY`:
+
 ```env
 GROQ_API_KEY=gsk_your_key_here
 WHISPER_MODEL=base
@@ -172,6 +174,7 @@ docker compose up redis -d
 ### 3. Install Dependencies
 
 **Windows:**
+
 ```powershell
 cd backend
 python -m venv venv
@@ -187,6 +190,7 @@ pip install -r requirements.txt
 ```
 
 **macOS / Linux:**
+
 ```bash
 cd backend
 python -m venv venv && source venv/bin/activate
@@ -197,15 +201,19 @@ pip install -r requirements.txt
 ### 4. Run (2 Terminals)
 
 **Terminal 1 — API Server:**
+
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
+
 ✅ Look for: `Clario API started — tables ready`
 
 **Terminal 2 — Celery Worker:**
+
 ```bash
 celery -A app.tasks.celery_app.celery_app worker --loglevel=info --pool=solo
 ```
+
 ✅ Look for: `celery@... ready.`
 
 ### 5. Test
@@ -220,13 +228,14 @@ Interactive API docs: **http://localhost:8000/docs**
 
 ### Jobs
 
-| Method | Endpoint | Description |
-|:---:|---|---|
-| `POST` | `/api/jobs` | Submit a YouTube URL → starts the pipeline |
-| `GET` | `/api/jobs/{id}` | Poll job status, stage, and progress (0-100%) |
-| `GET` | `/api/jobs` | List all jobs (most recent first) |
+| Method | Endpoint         | Description                                   |
+| :----: | ---------------- | --------------------------------------------- |
+| `POST` | `/api/jobs`      | Submit a YouTube URL → starts the pipeline    |
+| `GET`  | `/api/jobs/{id}` | Poll job status, stage, and progress (0-100%) |
+| `GET`  | `/api/jobs`      | List all jobs (most recent first)             |
 
 **Create a job:**
+
 ```bash
 curl -X POST http://localhost:8000/api/jobs \
   -H "Content-Type: application/json" \
@@ -234,6 +243,7 @@ curl -X POST http://localhost:8000/api/jobs \
 ```
 
 **Response:**
+
 ```json
 {
   "id": "3a102508-5121-48b5-9b11-69cded2b8e04",
@@ -247,18 +257,19 @@ curl -X POST http://localhost:8000/api/jobs \
 
 ### Reels
 
-| Method | Endpoint | Description |
-|:---:|---|---|
-| `GET` | `/api/reels/{job_id}` | Full reel: video metadata + all segments with clips and summaries |
-| `GET` | `/api/reels/{job_id}/notes` | Aggregated notes for all segments |
+| Method | Endpoint                    | Description                                                       |
+| :----: | --------------------------- | ----------------------------------------------------------------- |
+| `GET`  | `/api/reels/{job_id}`       | Full reel: video metadata + all segments with clips and summaries |
+| `GET`  | `/api/reels/{job_id}/notes` | Aggregated notes for all segments                                 |
 
 ### WebSocket
 
-| Protocol | Endpoint | Description |
-|:---:|---|---|
-| `WS` | `/ws/jobs/{job_id}` | Real-time progress stream (polls every 1.5s) |
+| Protocol | Endpoint            | Description                                  |
+| :------: | ------------------- | -------------------------------------------- |
+|   `WS`   | `/ws/jobs/{job_id}` | Real-time progress stream (polls every 1.5s) |
 
 **WebSocket message format:**
+
 ```json
 {
   "job_id": "3a102508-...",
@@ -271,45 +282,53 @@ curl -X POST http://localhost:8000/api/jobs \
 
 ### Health
 
-| Method | Endpoint | Description |
-|:---:|---|---|
-| `GET` | `/health` | Service health check |
+| Method | Endpoint  | Description          |
+| :----: | --------- | -------------------- |
+| `GET`  | `/health` | Service health check |
 
 ---
 
 ## 🧠 The AI Pipeline
 
-### Stage 1: Download (`pipeline/download.py`)
+The pipeline is implemented as a single Deep Module (`app/pipeline/processor.py`) that encapsulates these 6 conceptual stages. It hides internal state transitions and emits Domain Events to a decoupled `ProjectRepository` interface.
+
+### Stage 1: Download
+
 - **Tool:** yt-dlp (latest, auto-updated)
 - **Resolution:** 720p max (quality/speed balance)
 - **Anti-bot:** User-Agent spoofing, browser cookie extraction (Chrome → Edge → Firefox), 5 retries
 - **Output:** `temp/{job_id}/source.mp4`
 
-### Stage 2: Transcribe (`pipeline/transcribe.py`)
+### Stage 2: Transcribe
+
 - **Tool:** OpenAI Whisper (`base` model)
 - **Hardware:** NVIDIA GPU (CUDA + fp16) or CPU fallback
 - **Features:** Word-level timestamps, VAD for silence detection
 - **Output:** Full transcript + word array with `{word, start, end}`
 
-### Stage 3: Segment (`pipeline/segment.py`)
+### Stage 3: Segment
+
 - **Strategy:** Time-based windowing with smart sentence-boundary detection
 - **Target:** ~60 second segments (configurable via `SEGMENT_DURATION`)
 - **Intelligence:** Finds nearest sentence break (`.` `?` `!`) within a ±10 second window — never cuts mid-sentence
 - **Guard rail:** Max 20 segments per video (`MAX_SEGMENTS`)
 
-### Stage 4: Clip (`pipeline/clip.py`)
+### Stage 4: Clip
+
 - **Tool:** FFmpeg with stream copy (`-c copy`) — no re-encoding
 - **Speed:** Near-instant extraction (just copies bytes)
 - **Output:** `temp/{job_id}/clips/clip_000.mp4`
 
-### Stage 5: Summarize (`pipeline/summarize.py`)
+### Stage 5: Summarize
+
 - **Tool:** Groq API with `llama3-8b-8192`
 - **Output format:** Structured JSON with `title`, `summary`, `bullets[]`, `tags[]`
 - **Temperature:** 0.3 (deterministic, factual output)
 - **Fallback:** If Groq fails, extracts first sentence as summary
 - **Rate limit:** 14,400 requests/day (free tier) — supports 700+ videos/day
 
-### Stage 6: Store (`pipeline/storage.py`)
+### Stage 6: Store
+
 - **Dev mode:** Copies clips to `media/clips/` → served via FastAPI static files
 - **Prod mode:** Uploads to Cloudflare R2 (S3-compatible) → returns public URL
 - **Cleanup:** Deletes temp files after processing to save disk space
@@ -333,15 +352,14 @@ Clario/
 │   │   ├── models/
 │   │   │   └── models.py           # ORM: Job, Video, Segment, Clip, Summary
 │   │   ├── pipeline/
-│   │   │   ├── download.py         # yt-dlp with anti-403 hardening
-│   │   │   ├── transcribe.py       # OpenAI Whisper (GPU/CPU)
-│   │   │   ├── segment.py          # Sentence-boundary segmentation
-│   │   │   ├── clip.py             # FFmpeg stream-copy extraction
-│   │   │   ├── summarize.py        # Groq LLaMA 3 summarization
-│   │   │   └── storage.py          # Local disk / Cloudflare R2
+│   │   │   ├── __init__.py
+│   │   │   └── processor.py        # Deep module orchestrating all AI stages
+│   │   ├── repository/
+│   │   │   ├── project_repository.py      # Persistence interface (Domain Events)
+│   │   │   └── sqlalchemy_repository.py   # PostgreSQL/SQLite implementation
 │   │   └── tasks/
 │   │       ├── celery_app.py       # Celery configuration
-│   │       └── process_video.py    # Full pipeline orchestration
+│   │       └── process_video.py    # Celery task entrypoint
 │   ├── requirements.txt
 │   ├── .env.example
 │   ├── setup.bat                   # Windows one-click setup
@@ -370,6 +388,7 @@ summaries    →  AI output (one-liner, bullet points, topic tags)
 ```
 
 **Relationships:**
+
 ```
 Job  1──1  Video  1──*  Segment  1──1  Clip  1──1  Summary
 ```
@@ -380,16 +399,16 @@ Job  1──1  Video  1──*  Segment  1──1  Clip  1──1  Summary
 
 All settings via `.env` — see `.env.example` for defaults:
 
-| Variable | Default | Description |
-|---|---|---|
-| `DATABASE_URL` | `sqlite:///./clario.db` | Database connection string |
-| `REDIS_URL` | `redis://localhost:6379/0` | Celery broker URL |
-| `GROQ_API_KEY` | — | **Required.** Get free at [console.groq.com](https://console.groq.com) |
-| `WHISPER_MODEL` | `base` | Whisper model size (`tiny`, `base`, `small`, `medium`, `large`) |
-| `WHISPER_DEVICE` | `cuda` | `cuda` for NVIDIA GPU, `cpu` for CPU-only |
-| `SEGMENT_DURATION` | `60` | Target segment length in seconds |
-| `MAX_SEGMENTS` | `20` | Maximum segments per video |
-| `BASE_URL` | `http://localhost:8000` | API base URL (for local clip URLs) |
+| Variable           | Default                    | Description                                                            |
+| ------------------ | -------------------------- | ---------------------------------------------------------------------- |
+| `DATABASE_URL`     | `sqlite:///./clario.db`    | Database connection string                                             |
+| `REDIS_URL`        | `redis://localhost:6379/0` | Celery broker URL                                                      |
+| `GROQ_API_KEY`     | —                          | **Required.** Get free at [console.groq.com](https://console.groq.com) |
+| `WHISPER_MODEL`    | `base`                     | Whisper model size (`tiny`, `base`, `small`, `medium`, `large`)        |
+| `WHISPER_DEVICE`   | `cuda`                     | `cuda` for NVIDIA GPU, `cpu` for CPU-only                              |
+| `SEGMENT_DURATION` | `60`                       | Target segment length in seconds                                       |
+| `MAX_SEGMENTS`     | `20`                       | Maximum segments per video                                             |
+| `BASE_URL`         | `http://localhost:8000`    | API base URL (for local clip URLs)                                     |
 
 ---
 
@@ -427,5 +446,5 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 **Built with Precision by [SAMI](https://github.com/Mohammedsami001)**
 
-*Clario MVP*
+_Clario MVP_
 </div>
