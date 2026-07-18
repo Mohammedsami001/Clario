@@ -41,8 +41,10 @@ class InMemoryProjectRepository(ProjectRepository):
 @patch("app.pipeline.processor.os.listdir")
 @patch("app.pipeline.processor.os.path.exists")
 @patch("app.pipeline.processor.os.path.getsize")
+@patch("app.pipeline.processor.os.makedirs")
+@patch("app.pipeline.processor.shutil.rmtree")
 def test_video_processor_success(
-    mock_getsize, mock_exists, mock_listdir, mock_copy2,
+    mock_rmtree, mock_makedirs, mock_getsize, mock_exists, mock_listdir, mock_copy2,
     mock_subprocess, mock_groq, mock_whisper_load, mock_ytdl
 ):
     # Mock yt-dlp
@@ -100,7 +102,9 @@ def test_video_processor_success(
 
 
 @patch("app.pipeline.processor.yt_dlp.YoutubeDL")
-def test_video_processor_failure(mock_ytdl):
+@patch("app.pipeline.processor.os.makedirs")
+@patch("app.pipeline.processor.shutil.rmtree")
+def test_video_processor_failure(mock_rmtree, mock_makedirs, mock_ytdl):
     mock_ytdl.side_effect = Exception("Download Failed")
     
     repo = InMemoryProjectRepository()
