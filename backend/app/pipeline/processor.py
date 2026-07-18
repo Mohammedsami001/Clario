@@ -57,6 +57,8 @@ class VideoProcessor:
         self.youtube_url = youtube_url
         
         try:
+            self.repo.on_pipeline_start()
+
             # 1. Download
             title, duration, file_path = self._download_video()
             self.repo.on_download_complete(title, duration, self.youtube_url)

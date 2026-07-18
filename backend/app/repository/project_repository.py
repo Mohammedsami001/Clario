@@ -7,6 +7,10 @@ class ProjectRepository(Protocol):
     based on the domain events emitted here.
     """
 
+    def on_pipeline_start(self) -> None:
+        """Called when the pipeline begins execution (e.g. before downloading)."""
+        ...
+
     def on_download_complete(self, title: str, duration: float, source_url: str) -> None:
         """Called when the video is downloaded."""
         ...

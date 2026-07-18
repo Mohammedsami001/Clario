@@ -27,8 +27,11 @@ class SQLAlchemyProjectRepository(ProjectRepository):
         self.db.commit()
         logger.info(f"[Job {self.job_id}] {stage} — {progress}%")
 
-    def on_download_complete(self, title: str, duration: float, source_url: str) -> None:
+    def on_pipeline_start(self) -> None:
         self._update_job("processing", "Downloading video...", 5)
+
+    def on_download_complete(self, title: str, duration: float, source_url: str) -> None:
+        self._update_job("processing", "Transcribing audio (this takes a while)...", 20)
         
         self.video = Video(
             job_id=self.job_id,
@@ -41,12 +44,12 @@ class SQLAlchemyProjectRepository(ProjectRepository):
         self.db.refresh(self.video)
 
     def on_transcription_complete(self, transcript_text: str) -> None:
-        self._update_job("processing", "Transcribing audio...", 20)
+        self._update_job("processing", "Segmenting into concepts...", 40)
         self.video.transcript = transcript_text
         self.db.commit()
 
     def on_segmentation_complete(self, raw_segments: List[Dict[str, Any]]) -> None:
-        self._update_job("processing", "Segmenting into concepts...", 40)
+        self._update_job("processing", "Preparing to extract clips...", 50)
         
         for s in raw_segments:
             seg = Segment(
