@@ -118,20 +118,20 @@ Every component either runs locally on your hardware or uses a generous free tie
 └───────┬───────────────────────────────┬──────────────────────────────┘
         │                               │
 ┌───────▼───────┐            ┌──────────▼──────────────────────────────┐
-│   SQLite DB   │            │          CELERY WORKER                   │
-│               │            │                                          │
+│   SQLite DB   │            │          CELERY WORKER                  │
+│               │            │                                         │
 │  • jobs       │            │  Stage 1: yt-dlp download (720p)        │
 │  • videos     │            │  Stage 2: Whisper transcribe (GPU)      │
 │  • segments   │            │  Stage 3: Sentence-boundary segmentation│
 │  • clips      │            │  Stage 4: FFmpeg clip extraction        │
-│  • summaries  │            │  Stage 5: Groq AI summarization        │
+│  • summaries  │            │  Stage 5: Groq AI summarization         │
 │               │            │  Stage 6: Local / R2 storage            │
 └───────────────┘            │  Stage 7: Mark job complete             │
                              └──────────────────┬──────────────────────┘
                                                 │
                              ┌──────────────────▼──────────────────────┐
-                             │           REDIS (:6379)                  │
-                             │     Task broker + result backend         │
+                             │           REDIS (:6379)                 │
+                             │     Task broker + result backend        │
                              └─────────────────────────────────────────┘
 ```
 
